@@ -36,7 +36,7 @@ uchar validate(int value)
   if(value < 0)
     return 0;
   
-  return value;
+  return (uchar) value;
 }
 
 void sobel(Mat image)
@@ -90,5 +90,22 @@ void sobel(Mat image)
     }
   }
   
-  imwrite("deltaY.png", dy_image);
+  // ######################### gradient ################################
+  Mat grad_image;
+  grad_image.create(gray_image.size(), gray_image.type());
+  
+  for (int y = 1; y<gray_image.rows - 1; y++) {
+    for (int x = 1; x<gray_image.cols - 1; x++) {
+      int new_value;
+      
+      double dx = (double) dx_image.at<uchar>(y, x);
+      double dy = (double) dy_image.at<uchar>(y, x);
+      new_value = (int) sqrt(dx * dx + dy * dy);
+      
+      grad_image.at<uchar>(y, x) = validate(new_value);
+    }
+  }
+  
+  
+  imwrite("gradient.png", grad_image);
 }
