@@ -101,8 +101,8 @@ void sobel(Mat image)
     for (int x = 1; x<gray_image.cols - 1; x++) {
       int new_value;
       
-      double dx = (double) dx_image.at<uchar>(y, x);
-      double dy = (double) dy_image.at<uchar>(y, x);
+      double dx = (double) dx_image.at<uchar>(y, x) - 128;
+      double dy = (double) dy_image.at<uchar>(y, x) - 128;
       new_value = (int) sqrt(dx * dx + dy * dy);
       
       grad_image.at<uchar>(y, x) = validate(new_value);
@@ -119,8 +119,8 @@ void sobel(Mat image)
     for (int x = 1; x<gray_image.cols - 1; x++) {
       double new_value;
       
-      double dx = (double) dx_image.at<uchar>(y, x);
-      double dy = (double) dy_image.at<uchar>(y, x);
+      double dx = (double) dx_image.at<uchar>(y, x) - 128;
+      double dy = (double) dy_image.at<uchar>(y, x) - 128;
       new_value = atan(dy/dx);
       
       new_value = 255 * (new_value + M_PI / 2) / M_PI;
