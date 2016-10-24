@@ -42,8 +42,15 @@ int main( int argc, char** argv ) {
   
   cout << "create Accumulator array" << endl;
   
-  //FIXME: create array on heap!!
-  char Accumulator[341][441][180] = {0};
+  int*** Accumulator = new int**[341];
+  for(int i = 0; i < 341; i++)
+  {
+    Accumulator[i] = new int*[441];
+    for(int j = 0; j < 441; j++)
+    {
+      Accumulator[i][j] = new int[180];
+    }
+  }
   
   cout << "Accumulator created" << endl;
   
@@ -51,7 +58,7 @@ int main( int argc, char** argv ) {
     for (int x = 0; x < th_image.cols; x++) {
       // only consider white points
       if(th_image.at<uchar>(y, x) == 0)
-        break;
+        continue;
       
       uchar img_phi = phi_image.at<uchar>(y, x);
       float phi = ((float) img_phi * M_PI) / 255 - M_PI / 2;
@@ -64,12 +71,24 @@ int main( int argc, char** argv ) {
         int x0 = x + b;
         int y0 = y + a;
         
-        if(x0 > 0 && x0 < th_image.cols && y0 > 0 && y0 < th_image.rows)
-          Accumulator[y0][x0][radius-r_min] += 1;
+        if(x0 > 0 && x0 < th_image.cols && y0 > 0 && y0 < th_image.rows) {
+          Accumulator[y0][x0][radius - r_min] += 1;
+          // cout << "Added y " << y0 << " and x " << x0 << " with radius " << radius << endl;
+        }
       }
       
     }
   }
+  
+  for(int i = 0; i < 341; i++)
+  {
+    for(int j = 0; j < 441; j++)
+    {
+      delete Accumulator[i][j];
+    }
+    delete Accumulator[i];
+  }
+  delete Accumulator;
   
   return 0;
 }
