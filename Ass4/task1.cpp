@@ -18,8 +18,11 @@ int main( int argc, char** argv )
 {
   Mat image;
   
-  /// Load image
-  image = imread( "coins1.png", 1 );
+  // load image
+  if(argc > 1)
+    image = imread( argv[1], 1 );
+  else
+    image = imread( "coins1.png", 1 );
   
   if( !image.data )
   { return -1; }
