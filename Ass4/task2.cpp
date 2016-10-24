@@ -32,7 +32,7 @@ int main( int argc, char** argv ) {
   
   for (int y = 0; y<gray_image.rows; y++) {
     for (int x = 0; x < gray_image.cols; x++) {
-    if(gray_image.at<uchar>(y, x) > 25)
+    if(gray_image.at<uchar>(y, x) > 20)
       th_image.at<uchar>(y, x) = 255;
     else
       th_image.at<uchar>(y, x) = 0;
@@ -116,21 +116,51 @@ int main( int argc, char** argv ) {
   
   imwrite("houghspace.png", hough_transform);
   
-  int considered_radius = 0;
-  int radius_count = 0;
-  
-  for(int i = 0; i < 180; i++)
-  {
-    if(Accumulator[y_max][x_max][i] > radius_count)
-    {
-      radius_count = Accumulator[y_max][x_max][i];
-      considered_radius = i + 20;
+  while(1) {
+    x_max = 0;
+    y_max = 0;
+    max_radii_sum = 0;
+    
+    for (int y = 1; y<hough_transform.rows - 1; y++) {
+      for (int x = 1; x < hough_transform.cols - 1; x++) {
+        if(hough_transform.at<uchar>(y, x) > max_radii_sum)
+        {
+          x_max = x;
+          y_max = y;
+          max_radii_sum = hough_transform.at<uchar>(y, x);
+        }
+      }
     }
+    
+    if(max_radii_sum < 50)
+      break;
+    
+    
+    int considered_radius = 0;
+    int radius_count = 0;
+  
+    for (int i = 0; i < 180; i++) {
+      if (Accumulator[y_max][x_max][i] > radius_count) {
+        radius_count = Accumulator[y_max][x_max][i];
+        considered_radius = i + 20;
+      }
+    }
+    
+    //delete Square around peak
+    for (int y = 1; y<hough_transform.rows - 1; y++) {
+      for (int x = 1; x < hough_transform.cols - 1; x++) {
+        if(abs(y - y_max) < 60 && abs(x - x_max) < 60)
+        {
+          hough_transform.at<uchar>(y, x) = 0;
+        }
+      }
+    }
+    
+  
+    cout << "Radius: " << considered_radius << " with count " << radius_count << " at x " << x_max << " y " << y_max << endl;
+  
+    circle(original, Point(x_max, y_max), considered_radius, cvScalar(0, 0, 255), 2);
   }
-  
-  cout << "Radius: " << considered_radius << " with count " << radius_count << endl;
-  
-  circle(original, Point(x_max, y_max), considered_radius, cvScalar(0, 0, 255), 2);
   imwrite("detected.png", original);
   
   for(int i = 0; i < 341; i++)
@@ -142,6 +172,7 @@ int main( int argc, char** argv ) {
     delete Accumulator[i];
   }
   delete Accumulator;
+    
   
   return 0;
 }
