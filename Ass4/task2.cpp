@@ -12,10 +12,11 @@ int main( int argc, char** argv ) {
   int r_min = 20;
   int r_max = 200;
   
-  Mat image, image2;
+  Mat image, image2, original;
   
   image = imread("gradient.png", 1);
   image2 = imread("phi.png", 1);
+  original = imread("coins1.png", 1);
   
   if (!image.data) { return -1; }
   if (!image2.data) { return -1; }
@@ -63,7 +64,7 @@ int main( int argc, char** argv ) {
       uchar img_phi = phi_image.at<uchar>(y, x);
       float phi = ((float) img_phi * M_PI) / 255 - M_PI / 2;
       
-      for(int radius = r_min; radius <= r_max; radius++)
+      for(int radius = r_min; radius < r_max; radius++)
       {
         int a = radius * sin(phi);
         int b = radius * cos(phi);
@@ -84,20 +85,53 @@ int main( int argc, char** argv ) {
   
   hough_transform.create(th_image.size(), th_image.type());
   
-  for (int y = 0; y<hough_transform.rows; y++) {
-    for (int x = 0; x < hough_transform.cols; x++) {
+  int max_radii_sum = 0;
+  int x_max = 0;
+  int y_max = 0;
+  
+  for (int y = 1; y<hough_transform.rows - 1; y++) {
+    for (int x = 1; x < hough_transform.cols - 1; x++) {
       int radii_sum = 0;
       for(int i = 0; i < 180; i++)
       {
         radii_sum += Accumulator[y][x][i];
       }
+      
+      if(radii_sum > max_radii_sum)
+      {
+        max_radii_sum = radii_sum;
+        x_max = x;
+        y_max = y;
+      }
+      
+      if(radii_sum > 255)
+        radii_sum = 255;
+      
       // cout << "radii_sum: " << radii_sum << " log: " << log(radii_sum) << endl;
       hough_transform.at<uchar>(y, x) = radii_sum;
     }
   }
   
+  cout << "maximum radius sum: " << max_radii_sum << " at x: " << x_max << " and y: " << y_max << endl;
+  
   imwrite("houghspace.png", hough_transform);
   
+  int considered_radius = 0;
+  int radius_count = 0;
+  
+  for(int i = 0; i < 180; i++)
+  {
+    if(Accumulator[y_max][x_max][i] > radius_count)
+    {
+      radius_count = Accumulator[y_max][x_max][i];
+      considered_radius = i + 20;
+    }
+  }
+  
+  cout << "Radius: " << considered_radius << " with count " << radius_count << endl;
+  
+  circle(original, Point(x_max, y_max), considered_radius, cvScalar(0, 0, 255), 2);
+  imwrite("detected.png", original);
   
   for(int i = 0; i < 341; i++)
   {
