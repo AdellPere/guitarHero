@@ -71,14 +71,33 @@ int main( int argc, char** argv ) {
         int x0 = x + b;
         int y0 = y + a;
         
+        /// vote
         if(x0 > 0 && x0 < th_image.cols && y0 > 0 && y0 < th_image.rows) {
           Accumulator[y0][x0][radius - r_min] += 1;
           // cout << "Added y " << y0 << " and x " << x0 << " with radius " << radius << endl;
         }
       }
-      
     }
   }
+  
+  Mat hough_transform;
+  
+  hough_transform.create(th_image.size(), th_image.type());
+  
+  for (int y = 0; y<hough_transform.rows; y++) {
+    for (int x = 0; x < hough_transform.cols; x++) {
+      int radii_sum = 0;
+      for(int i = 0; i < 180; i++)
+      {
+        radii_sum += Accumulator[y][x][i];
+      }
+      // cout << "radii_sum: " << radii_sum << " log: " << log(radii_sum) << endl;
+      hough_transform.at<uchar>(y, x) = radii_sum;
+    }
+  }
+  
+  imwrite("houghspace.png", hough_transform);
+  
   
   for(int i = 0; i < 341; i++)
   {
