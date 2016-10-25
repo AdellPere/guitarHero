@@ -49,6 +49,7 @@ int main( int argc, char** argv ) {
     Accumulator[i] = new int*[441];
     for(int j = 0; j < 441; j++)
     {
+      //FIXME: Max Raius half as much
       Accumulator[i][j] = new int[180];
     }
   }
@@ -72,10 +73,17 @@ int main( int argc, char** argv ) {
         int x0 = x + b;
         int y0 = y + a;
         
+        int x1 = x - b;
+        int y1 = y - a;
+        
         /// vote
         if(x0 > 0 && x0 < th_image.cols && y0 > 0 && y0 < th_image.rows) {
           Accumulator[y0][x0][radius - r_min] += 1;
           // cout << "Added y " << y0 << " and x " << x0 << " with radius " << radius << endl;
+        }
+        if(x1 > 0 && x1 < th_image.cols && y1 > 0 && y1 < th_image.rows) {
+          Accumulator[y1][x1][radius - r_min] += 1;
+          // cout << "Added y " << y1 << " and x " << x1 << " with radius " << radius << endl;
         }
       }
     }
@@ -132,7 +140,7 @@ int main( int argc, char** argv ) {
       }
     }
     
-    if(max_radii_sum < 50)
+    if(max_radii_sum < 75)
       break;
     
     
