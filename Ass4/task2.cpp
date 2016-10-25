@@ -9,8 +9,14 @@ using namespace std;
 using namespace cv;
 
 int main( int argc, char** argv ) {
-  int r_min = 20;
-  int r_max = 200;
+  
+  /// Parameters
+  const int R_MIN = 20;
+  const int R_MAX = 200;
+  const int INITIAL_THRESHOLD = 20;
+  const int VOTER_THRESHOLD = 75;
+  const int DISTANCE_BETWEEN_CENTERS = 60;
+  
   
   Mat image, image2, original;
   
@@ -32,7 +38,7 @@ int main( int argc, char** argv ) {
   
   for (int y = 0; y<gray_image.rows; y++) {
     for (int x = 0; x < gray_image.cols; x++) {
-    if(gray_image.at<uchar>(y, x) > 20)
+    if(gray_image.at<uchar>(y, x) > INITIAL_THRESHOLD)
       th_image.at<uchar>(y, x) = 255;
     else
       th_image.at<uchar>(y, x) = 0;
@@ -43,14 +49,14 @@ int main( int argc, char** argv ) {
   
   cout << "create Accumulator array" << endl;
   
-  int*** Accumulator = new int**[341];
-  for(int i = 0; i < 341; i++)
+  int*** Accumulator = new int**[th_image.rows];
+  for(int i = 0; i < th_image.rows; i++)
   {
-    Accumulator[i] = new int*[441];
-    for(int j = 0; j < 441; j++)
+    Accumulator[i] = new int*[th_image.cols];
+    for(int j = 0; j < th_image.cols; j++)
     {
       //FIXME: Max Raius half as much
-      Accumulator[i][j] = new int[180];
+      Accumulator[i][j] = new int[R_MAX - R_MIN];
     }
   }
   
@@ -65,7 +71,7 @@ int main( int argc, char** argv ) {
       uchar img_phi = phi_image.at<uchar>(y, x);
       float phi = ((float) img_phi * M_PI) / 255 - M_PI / 2;
       
-      for(int radius = r_min; radius < r_max; radius++)
+      for(int radius = R_MIN; radius < R_MAX; radius++)
       {
         int a = radius * sin(phi);
         int b = radius * cos(phi);
@@ -78,11 +84,11 @@ int main( int argc, char** argv ) {
         
         /// vote
         if(x0 > 0 && x0 < th_image.cols && y0 > 0 && y0 < th_image.rows) {
-          Accumulator[y0][x0][radius - r_min] += 1;
+          Accumulator[y0][x0][radius - R_MIN] += 1;
           // cout << "Added y " << y0 << " and x " << x0 << " with radius " << radius << endl;
         }
         if(x1 > 0 && x1 < th_image.cols && y1 > 0 && y1 < th_image.rows) {
-          Accumulator[y1][x1][radius - r_min] += 1;
+          Accumulator[y1][x1][radius - R_MIN] += 1;
           // cout << "Added y " << y1 << " and x " << x1 << " with radius " << radius << endl;
         }
       }
@@ -100,7 +106,7 @@ int main( int argc, char** argv ) {
   for (int y = 1; y<hough_transform.rows - 1; y++) {
     for (int x = 1; x < hough_transform.cols - 1; x++) {
       int radii_sum = 0;
-      for(int i = 0; i < 180; i++)
+      for(int i = 0; i < R_MAX -R_MIN; i++)
       {
         radii_sum += Accumulator[y][x][i];
       }
@@ -140,24 +146,24 @@ int main( int argc, char** argv ) {
       }
     }
     
-    if(max_radii_sum < 75)
+    if(max_radii_sum < VOTER_THRESHOLD)
       break;
     
     
     int considered_radius = 0;
     int radius_count = 0;
   
-    for (int i = 0; i < 180; i++) {
+    for (int i = 0; i < R_MAX - R_MIN; i++) {
       if (Accumulator[y_max][x_max][i] > radius_count) {
         radius_count = Accumulator[y_max][x_max][i];
-        considered_radius = i + 20;
+        considered_radius = i + R_MIN;
       }
     }
     
     //delete Square around peak
     for (int y = 1; y<hough_transform.rows - 1; y++) {
       for (int x = 1; x < hough_transform.cols - 1; x++) {
-        if(abs(y - y_max) < 60 && abs(x - x_max) < 60)
+        if(abs(y - y_max) < DISTANCE_BETWEEN_CENTERS && abs(x - x_max) < DISTANCE_BETWEEN_CENTERS)
         {
           hough_transform.at<uchar>(y, x) = 0;
         }
@@ -171,9 +177,9 @@ int main( int argc, char** argv ) {
   }
   imwrite("detected.png", original);
   
-  for(int i = 0; i < 341; i++)
+  for(int i = 0; i < th_image.rows; i++)
   {
-    for(int j = 0; j < 441; j++)
+    for(int j = 0; j < th_image.cols; j++)
     {
       delete Accumulator[i][j];
     }
