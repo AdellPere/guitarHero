@@ -12,9 +12,9 @@ int main( int argc, char** argv ) {
   
   /// Parameters
   const int R_MIN = 20;
-  const int R_MAX = 200;
+  const int R_MAX = 100;
   const int INITIAL_THRESHOLD = 20;
-  const int VOTER_THRESHOLD = 75;
+  const int VOTER_THRESHOLD = 50;
   const int DISTANCE_BETWEEN_CENTERS = 60;
   
   
