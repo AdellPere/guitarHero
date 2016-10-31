@@ -15,6 +15,7 @@ int main( int argc, char** argv ) {
   const int R_MAX = 100;
   const int INITIAL_THRESHOLD = 20;
   const int VOTER_THRESHOLD = 50;
+  const int SECONDARY_THRESHOLD = 5;
   const int DISTANCE_BETWEEN_CENTERS = 60;
   
   
@@ -159,6 +160,9 @@ int main( int argc, char** argv ) {
         considered_radius = i + R_MIN;
       }
     }
+    
+    if(radius_count < SECONDARY_THRESHOLD)
+      break;
     
     //delete Square around peak
     for (int y = 1; y<hough_transform.rows - 1; y++) {
