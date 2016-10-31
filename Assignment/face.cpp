@@ -22,7 +22,7 @@ using namespace cv;
 void detectAndDisplay( Mat frame );
 
 /** Global variables */
-String cascade_name = "cascade.xml";
+String cascade_name = "frontalface.xml";
 CascadeClassifier cascade;
 
 
@@ -63,7 +63,8 @@ void detectAndDisplay( Mat frame )
        // 4. Draw box around faces found
 	for( int i = 0; i < faces.size(); i++ )
 	{
-		rectangle(frame, Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar( 0, 255, 0 ), 2);
+		std:cout << Point(faces[i].x, faces[i].y) << " and " << Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height) << endl;
+    rectangle(frame, Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar( 0, 255, 0 ), 2);
 	}
 
 }
